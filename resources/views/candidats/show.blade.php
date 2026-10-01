@@ -12,15 +12,12 @@
 
     <div class="card mb-4">
         <div class="card-body">
-            <div class="row mb-3">
+            <div class="row">
                 <div class="col-md-4">
                     <small class="text-muted d-block">Téléphone</small>
                     <span class="fw-semibold">{{ $candidat->telephone ?? '—' }}</span>
                 </div>
             </div>
-            <hr>
-            <small class="text-muted d-block mb-1">CV</small>
-            <p class="mb-0">{{ $candidat->cv ?? '—' }}</p>
         </div>
     </div>
 
@@ -68,9 +65,6 @@
         </div>
     </div>
 
-    <a href="{{ route('candidats.edit', $candidat) }}" class="btn btn-primary">
-        <i class="bi bi-pencil me-1"></i>Modifier
-    </a>
     <a href="{{ route('candidats.index') }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Retour à la liste
     </a>

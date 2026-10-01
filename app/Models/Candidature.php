@@ -15,9 +15,15 @@ class Candidature extends Model
         'id_candidat',
         'id_offre',
         'lettre_motivation',
+        'cv_path',
         'statut',
         'motif_decision',
         'date_candidature',
+        'date_entretien',
+    ];
+
+    protected $casts = [
+        'date_entretien' => 'datetime',
     ];
 
     public function candidat()

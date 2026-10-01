@@ -13,18 +13,16 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th>ID</th>
                         <th>Candidat</th>
                         <th>Offre</th>
                         <th>Statut</th>
-                        <th>Date</th>
+                        <th>Entretien</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($candidatures as $candidature)
                         <tr>
-                            <td class="text-muted">#{{ $candidature->id_candidature }}</td>
                             <td class="fw-semibold">{{ $candidature->candidat->nom }} {{ $candidature->candidat->prenom }}</td>
                             <td>{{ $candidature->offre->titre }}</td>
                             <td>
@@ -48,7 +46,14 @@
                                 @endphp
                                 <span class="badge {{ $badgeClass }}">{{ $statutLabel }}</span>
                             </td>
-                            <td>{{ \Carbon\Carbon::parse($candidature->date_candidature)->format('d/m/Y') }}</td>
+                            <td>
+                                @if ($candidature->date_entretien)
+                                    <i class="bi bi-calendar-event me-1 text-warning"></i>
+                                    <span class="fw-semibold">{{ \Carbon\Carbon::parse($candidature->date_entretien)->format('d/m/Y à H:i') }}</span>
+                                @else
+                                    <span class="text-muted">Candidature du {{ \Carbon\Carbon::parse($candidature->date_candidature)->format('d/m/Y') }}</span>
+                                @endif
+                            </td>
                             <td class="text-end">
                                 <a href="{{ route('candidatures.show', $candidature) }}" class="btn btn-sm btn-outline-secondary" title="Voir">
                                     <i class="bi bi-eye"></i>
@@ -68,7 +73,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
+                            <td colspan="5" class="text-center text-muted py-4">
                                 <i class="bi bi-file-earmark-x fs-3 d-block mb-2"></i>
                                 Aucune candidature enregistrée.
                             </td>

@@ -5,7 +5,22 @@
 
 <div class="mb-3">
     <label class="form-label fw-semibold">Description</label>
-    <textarea name="description" class="form-control" rows="5" required placeholder="Décrivez les missions, compétences requises...">{{ old('description', $offre->description ?? '') }}</textarea>
+    <textarea name="description" class="form-control" rows="4" required placeholder="Présentation générale du poste...">{{ old('description', $offre->description ?? '') }}</textarea>
+</div>
+
+<div class="mb-3">
+    <label class="form-label fw-semibold">Missions principales <span class="text-muted fw-normal">(optionnel)</span></label>
+    <textarea name="missions" class="form-control" rows="4" placeholder="Ex: Développer et maintenir les fonctionnalités du site, participer aux réunions d'équipe...">{{ old('missions', $offre->missions ?? '') }}</textarea>
+</div>
+
+<div class="mb-3">
+    <label class="form-label fw-semibold">Compétences recherchées <span class="text-muted fw-normal">(optionnel)</span></label>
+    <textarea name="competences" class="form-control" rows="3" placeholder="Ex: PHP, Laravel, MySQL, travail en équipe...">{{ old('competences', $offre->competences ?? '') }}</textarea>
+</div>
+
+<div class="mb-3">
+    <label class="form-label fw-semibold">Profil recherché <span class="text-muted fw-normal">(optionnel)</span></label>
+    <textarea name="profil_recherche" class="form-control" rows="3" placeholder="Ex: Bac+3 en informatique, 1 an d'expérience minimum...">{{ old('profil_recherche', $offre->profil_recherche ?? '') }}</textarea>
 </div>
 
 <div class="row">

@@ -20,16 +20,24 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'email' => 'required|email|max:100|unique:users,email',
+            'pays' => 'required|string|max:50',
+            'indicatif' => 'required|string|max:5',
+            'telephone' => 'required|string|max:20',
             'password' => 'required|string|min:6|confirmed',
+        ], [
+            'email.unique' => 'Un compte avec ces informations existe déjà. Connectez-vous plutôt.',
         ]);
 
         $validated['role'] = 'candidat';
+        $telephoneComplet = $validated['indicatif'] . ' ' . $validated['telephone'];
 
         $nomComplet = explode(' ', $validated['name'], 2);
         $candidat = Candidat::create([
             'nom' => $nomComplet[0],
             'prenom' => $nomComplet[1] ?? '',
             'email' => $validated['email'],
+            'telephone' => $telephoneComplet,
+            'pays' => $validated['pays'],
         ]);
 
         $user = User::create([

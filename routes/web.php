@@ -6,6 +6,7 @@ use App\Http\Controllers\CandidatController;
 use App\Http\Controllers\CandidatureController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
 use App\Models\OffreEmploi;
 use App\Models\Candidat;
 use App\Models\Candidature;
@@ -16,7 +17,9 @@ Route::get('/', function () {
         'candidats' => Candidat::count(),
         'candidatures' => Candidature::count(),
     ];
-    return view('home', compact('stats'));
+    $offresAlaUne = OffreEmploi::where('statut', 'ouverte')->latest()->take(3)->get();
+    $dernieresCandidatures = Candidature::with(['candidat', 'offre'])->latest()->take(5)->get();
+    return view('home', compact('stats', 'offresAlaUne', 'dernieresCandidatures'));
 });
 
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
@@ -44,13 +47,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/offres/{offre}/postuler', [CandidatureController::class, 'postulerForm'])->name('offres.postuler.form');
     Route::post('/offres/{offre}/postuler', [CandidatureController::class, 'postuler'])->name('offres.postuler');
 
-    // Candidats : entièrement réservé au recruteur
+    // Candidats : le recruteur peut seulement consulter (création/modification/suppression réservées au candidat lui-même via son compte)
     Route::middleware('recruteur')->group(function () {
-        Route::resource('candidats', CandidatController::class);
+        Route::resource('candidats', CandidatController::class)->only(['index', 'show']);
     });
 
     // Candidatures : le candidat consulte les siennes et postule ; le recruteur gère tout
     Route::get('/mes-candidatures', [CandidatureController::class, 'mesCandidatures'])->name('candidatures.mes');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
     Route::middleware('recruteur')->group(function () {
         Route::resource('candidatures', CandidatureController::class)->except(['create', 'store']);

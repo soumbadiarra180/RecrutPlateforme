@@ -23,6 +23,9 @@ class OffreEmploiController extends Controller
         $validated = $request->validate([
             'titre' => 'required|string|max:100',
             'description' => 'required|string',
+            'missions' => 'nullable|string',
+            'competences' => 'nullable|string',
+            'profil_recherche' => 'nullable|string',
             'type_contrat' => 'required|in:CDI,CDD,Stage,Freelance',
             'lieu' => 'required|string|max:100',
             'date_publication' => 'required|date',
@@ -51,6 +54,9 @@ class OffreEmploiController extends Controller
         $validated = $request->validate([
             'titre' => 'required|string|max:100',
             'description' => 'required|string',
+            'missions' => 'nullable|string',
+            'competences' => 'nullable|string',
+            'profil_recherche' => 'nullable|string',
             'type_contrat' => 'required|in:CDI,CDD,Stage,Freelance',
             'lieu' => 'required|string|max:100',
             'date_publication' => 'required|date',

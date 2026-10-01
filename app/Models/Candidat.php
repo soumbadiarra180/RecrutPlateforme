@@ -16,11 +16,17 @@ class Candidat extends Model
         'prenom',
         'email',
         'telephone',
+        'pays',
         'cv',
     ];
 
     public function candidatures()
     {
         return $this->hasMany(Candidature::class, 'id_candidat', 'id_candidat');
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'id_candidat', 'id_candidat')->latest();
     }
 }

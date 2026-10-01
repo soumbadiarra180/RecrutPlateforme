@@ -15,8 +15,8 @@
                     <tr>
                         <th>Offre</th>
                         <th>Statut</th>
+                        <th>Entretien / Date de candidature</th>
                         <th>Commentaire du recruteur</th>
-                        <th>Date</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,8 +44,15 @@
                                 @endphp
                                 <span class="badge {{ $badgeClass }}">{{ $statutLabel }}</span>
                             </td>
+                            <td>
+                                @if ($candidature->date_entretien)
+                                    <i class="bi bi-calendar-event me-1 text-warning"></i>
+                                    <span class="fw-semibold">{{ \Carbon\Carbon::parse($candidature->date_entretien)->format('d/m/Y à H:i') }}</span>
+                                @else
+                                    <span class="text-muted">Candidature du {{ \Carbon\Carbon::parse($candidature->date_candidature)->format('d/m/Y') }}</span>
+                                @endif
+                            </td>
                             <td class="text-muted">{{ $candidature->motif_decision ?? '—' }}</td>
-                            <td>{{ \Carbon\Carbon::parse($candidature->date_candidature)->format('d/m/Y') }}</td>
                         </tr>
                     @empty
                         <tr>

@@ -15,6 +15,9 @@ class OffreEmploi extends Model
     protected $fillable = [
         'titre',
         'description',
+        'missions',
+        'competences',
+        'profil_recherche',
         'type_contrat',
         'lieu',
         'date_publication',
