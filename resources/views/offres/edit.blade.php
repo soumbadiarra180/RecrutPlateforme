@@ -3,20 +3,28 @@
 @section('title', 'Modifier l\'offre')
 
 @section('content')
-    <h1 class="h3 fw-bold mb-4">Modifier l'offre #{{ $offre->id_offre }}</h1>
+    <div class="ir-page-head">
+        <div>
+            <a href="{{ route('offres.show', $offre) }}" class="ir-back"><i class="bi bi-arrow-left"></i>Retour à l'offre</a>
+            <h1>Modifier l'offre</h1>
+            <p>{{ $offre->titre }} · publiée le {{ \Carbon\Carbon::parse($offre->date_publication)->format('d/m/Y') }}</p>
+        </div>
+    </div>
 
-    <div class="card">
-        <div class="card-body p-4">
-            <form action="{{ route('offres.update', $offre) }}" method="POST">
+    <div class="row g-4 align-items-start">
+        <div class="col-lg-8">
+            <form action="{{ route('offres.update', $offre) }}" method="POST" class="ir-form-card" novalidate>
                 @csrf
                 @method('PUT')
                 @include('offres._form')
-
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-lg me-1"></i>Mettre à jour
-                </button>
-                <a href="{{ route('offres.index') }}" class="btn btn-outline-secondary">Annuler</a>
+                <div class="ir-form-actions">
+                    <a href="{{ route('offres.index') }}" class="ir-cancel">Annuler</a>
+                    <button type="submit" class="ir-submit"><i class="bi bi-check-lg"></i>Enregistrer les modifications</button>
+                </div>
             </form>
+        </div>
+        <div class="col-lg-4">
+            @include('offres._preview')
         </div>
     </div>
 @endsection

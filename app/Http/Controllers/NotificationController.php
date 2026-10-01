@@ -9,9 +9,10 @@ class NotificationController extends Controller
 {
     public function index()
     {
-        $notifications = Notification::where('id_candidat', auth()->user()->id_candidat)
+        $notifications = Notification::with('candidature.offre')
+            ->where('id_candidat', auth()->user()->id_candidat)
             ->latest()
-            ->paginate(10);
+            ->paginate(15);
 
         Notification::where('id_candidat', auth()->user()->id_candidat)
             ->where('lu', false)

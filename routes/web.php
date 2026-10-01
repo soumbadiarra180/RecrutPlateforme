@@ -17,9 +17,25 @@ Route::get('/', function () {
         'candidats' => Candidat::count(),
         'candidatures' => Candidature::count(),
     ];
-    $offresAlaUne = OffreEmploi::where('statut', 'ouverte')->latest()->take(3)->get();
+    $offresAlaUne = OffreEmploi::where('statut', 'ouverte')->whereDate('date_limite', '>=', today())->latest()->take(8)->get();
     $dernieresCandidatures = Candidature::with(['candidat', 'offre'])->latest()->take(5)->get();
-    return view('home', compact('stats', 'offresAlaUne', 'dernieresCandidatures'));
+
+    // Données personnelles du candidat connecté (tableau de bord d'accueil)
+    $mesStats = null;
+    $mesCandidatures = collect();
+    if (auth()->check() && auth()->user()->isCandidat()) {
+        $idCandidat = auth()->user()->id_candidat;
+        $base = Candidature::where('id_candidat', $idCandidat);
+        $mesStats = [
+            'total' => (clone $base)->count(),
+            'en_cours' => (clone $base)->whereIn('statut', ['recue', 'en_cours_examen'])->count(),
+            'entretien' => (clone $base)->where('statut', 'entretien')->count(),
+            'acceptee' => (clone $base)->where('statut', 'acceptee')->count(),
+        ];
+        $mesCandidatures = Candidature::with('offre')->where('id_candidat', $idCandidat)->latest()->take(4)->get();
+    }
+
+    return view('home', compact('stats', 'offresAlaUne', 'dernieresCandidatures', 'mesStats', 'mesCandidatures'));
 });
 
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');

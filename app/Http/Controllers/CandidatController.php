@@ -7,10 +7,30 @@ use Illuminate\Http\Request;
 
 class CandidatController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $candidats = Candidat::withCount('candidatures')->paginate(10);
-        return view('candidats.index', compact('candidats'));
+        $recherche = trim((string) $request->query('q', ''));
+        $pays = $request->query('pays');
+
+        $candidats = Candidat::withCount('candidatures')
+            ->withMax('candidatures', 'date_candidature')
+            ->when($recherche !== '', function ($q) use ($recherche) {
+                $q->where(function ($w) use ($recherche) {
+                    foreach (['nom', 'prenom', 'email', 'telephone'] as $champ) {
+                        $w->orWhere($champ, 'like', "%{$recherche}%");
+                    }
+                });
+            })
+            ->when($pays, fn ($q, $p) => $q->where('pays', $p))
+            ->latest()
+            ->paginate(12)
+            ->withQueryString();
+
+        $listePays = Candidat::whereNotNull('pays')->distinct()->orderBy('pays')->pluck('pays');
+        $totalCandidats = Candidat::count();
+        $actifs = Candidat::has('candidatures')->count();
+
+        return view('candidats.index', compact('candidats', 'recherche', 'pays', 'listePays', 'totalCandidats', 'actifs'));
     }
 
     public function create()
@@ -35,7 +55,7 @@ class CandidatController extends Controller
 
     public function show(Candidat $candidat)
     {
-        $candidat->load('candidatures.offre');
+        $candidat->load(['candidatures' => fn ($q) => $q->latest(), 'candidatures.offre']);
         return view('candidats.show', compact('candidat'));
     }
 

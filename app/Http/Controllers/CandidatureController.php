@@ -10,10 +10,36 @@ use Illuminate\Http\Request;
 
 class CandidatureController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $candidatures = Candidature::with(['candidat', 'offre'])->paginate(10);
-        return view('candidatures.index', compact('candidatures'));
+        $statuts = ['recue', 'en_cours_examen', 'entretien', 'acceptee', 'refusee'];
+        $statut = in_array($request->query('statut'), $statuts, true) ? $request->query('statut') : null;
+        $recherche = trim((string) $request->query('q', ''));
+        $idOffre = $request->query('offre');
+
+        // Recherche par nom / email du candidat ou titre de l'offre, filtre par offre
+        $base = Candidature::query()
+            ->when($recherche !== '', function ($q) use ($recherche) {
+                $q->where(function ($w) use ($recherche) {
+                    $w->whereHas('candidat', fn ($c) => $c->where('nom', 'like', "%{$recherche}%")
+                            ->orWhere('prenom', 'like', "%{$recherche}%")
+                            ->orWhere('email', 'like', "%{$recherche}%"))
+                        ->orWhereHas('offre', fn ($o) => $o->where('titre', 'like', "%{$recherche}%"));
+                });
+            })
+            ->when($idOffre, fn ($q, $id) => $q->where('id_offre', $id));
+
+        $compteurs = (clone $base)->selectRaw('statut, count(*) as total')->groupBy('statut')->pluck('total', 'statut');
+
+        $candidatures = (clone $base)->with(['candidat', 'offre'])
+            ->when($statut, fn ($q, $s) => $q->where('statut', $s))
+            ->latest()
+            ->paginate(12)
+            ->withQueryString();
+
+        $offres = OffreEmploi::orderBy('titre')->get(['id_offre', 'titre']);
+
+        return view('candidatures.index', compact('candidatures', 'compteurs', 'statut', 'recherche', 'idOffre', 'offres'));
     }
 
     public function create()
@@ -140,12 +166,42 @@ class CandidatureController extends Controller
         return redirect()->route('candidatures.mes')->with('success', 'Candidature soumise avec succès.');
     }
 
-    public function mesCandidatures()
+    public function mesCandidatures(Request $request)
     {
-        $candidatures = Candidature::with('offre')
-            ->where('id_candidat', auth()->user()->id_candidat)
-            ->paginate(10);
+        $idCandidat = auth()->user()->id_candidat;
 
-        return view('candidatures.mes', compact('candidatures'));
+        // Filtres proposés en onglets : clé => statuts correspondants
+        $filtres = [
+            'toutes' => null,
+            'en_cours' => ['recue', 'en_cours_examen'],
+            'entretien' => ['entretien'],
+            'acceptee' => ['acceptee'],
+            'refusee' => ['refusee'],
+        ];
+        $filtre = array_key_exists($request->query('statut'), $filtres) ? $request->query('statut') : 'toutes';
+
+        $compteurs = Candidature::where('id_candidat', $idCandidat)
+            ->selectRaw('statut, count(*) as total')
+            ->groupBy('statut')
+            ->pluck('total', 'statut');
+        $nombres = collect($filtres)->map(fn ($statuts) => $statuts
+            ? collect($statuts)->sum(fn ($s) => $compteurs[$s] ?? 0)
+            : $compteurs->sum());
+
+        $prochainEntretien = Candidature::with('offre')
+            ->where('id_candidat', $idCandidat)
+            ->where('statut', 'entretien')
+            ->where('date_entretien', '>=', now())
+            ->orderBy('date_entretien')
+            ->first();
+
+        $candidatures = Candidature::with('offre')
+            ->where('id_candidat', $idCandidat)
+            ->when($filtres[$filtre], fn ($q, $statuts) => $q->whereIn('statut', $statuts))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('candidatures.mes', compact('candidatures', 'filtre', 'nombres', 'prochainEntretien'));
     }
 }

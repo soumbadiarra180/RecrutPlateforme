@@ -3,57 +3,97 @@
 @section('title', 'Postuler à l\'offre')
 
 @section('content')
-    <div class="row justify-content-center">
+    @php $candidat = auth()->user()->candidat; @endphp
+
+    <div class="ir-page-head">
+        <div>
+            <a href="{{ route('offres.show', $offre) }}" class="ir-back"><i class="bi bi-arrow-left"></i>Retour à l'offre</a>
+            <h1>Postuler</h1>
+            <p>Envoyez votre CV pour le poste de <strong>{{ $offre->titre }}</strong>.</p>
+        </div>
+    </div>
+
+    <div class="row g-4 align-items-start">
         <div class="col-lg-8">
-            <div class="card mb-4 fade-in-up">
-                <div class="card-body p-4">
-                    <span class="badge bg-primary-subtle text-primary mb-2">{{ $offre->type_contrat }}</span>
-                    <h4 class="fw-bold mb-1">{{ $offre->titre }}</h4>
-                    <p class="text-muted mb-3"><i class="bi bi-geo-alt me-1"></i>{{ $offre->lieu }}</p>
-                    <p class="mb-0">{{ $offre->description }}</p>
-                </div>
-            </div>
+            <form action="{{ route('offres.postuler', $offre) }}" method="POST" enctype="multipart/form-data" class="ir-form-card" novalidate>
+                @csrf
 
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0 ps-3">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <div class="card auth-card fade-in-up" style="transition-delay: 0.1s;">
-                <div class="card-body p-4 p-md-5">
-                    <div class="text-center mb-4">
-                        <div class="icon-wrapper icon-orange mx-auto mb-3" style="width:64px;height:64px;font-size:1.7rem;">
-                            <i class="bi bi-send-fill"></i>
-                        </div>
-                        <h1 class="h4 fw-bold mb-1">Postuler à ce poste</h1>
-                        <p class="text-muted mb-0">Votre profil sera automatiquement lié à cette candidature</p>
+                @if ($errors->any())
+                    <div class="ir-alert m-4 mb-0" role="alert">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        <div>Votre candidature n'a pas été envoyée : corrigez les champs signalés ci-dessous.</div>
                     </div>
+                @endif
 
-                    <form action="{{ route('offres.postuler', $offre) }}" method="POST" enctype="multipart/form-data">
-                        @csrf
+                <section class="ir-form-section">
+                    <div class="ir-form-section-head">
+                        <span class="ir-step-badge">1</span>
+                        <div><h2>Votre CV</h2><p>Au format PDF, 5 Mo maximum.</p></div>
+                    </div>
+                    <label class="ir-drop @error('cv') is-invalid @enderror" data-drop>
+                        <input type="file" name="cv" accept=".pdf,application/pdf" required>
+                        <span class="ir-drop-icon"><i class="bi bi-file-earmark-arrow-up"></i></span>
+                        <span>
+                            <strong data-drop-title>Glissez votre CV ici ou cliquez pour le choisir</strong>
+                            <small data-drop-sub>PDF uniquement · 5 Mo maximum</small>
+                        </span>
+                    </label>
+                    @error('cv')<div class="ir-error"><i class="bi bi-exclamation-circle"></i>{{ $message }}</div>@enderror
+                </section>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">CV <span class="text-muted fw-normal">(PDF, max 5 Mo)</span></label>
-                            <input type="file" name="cv" class="form-control" accept=".pdf" required>
-                        </div>
+                <section class="ir-form-section">
+                    <div class="ir-form-section-head">
+                        <span class="ir-step-badge">2</span>
+                        <div><h2>Lettre de motivation <small class="text-muted fw-normal">(optionnel)</small></h2><p>Quelques lignes suffisent : pourquoi ce poste, et ce que vous apportez.</p></div>
+                    </div>
+                    <div class="ir-field">
+                        <textarea id="lettre_motivation" name="lettre_motivation" rows="7" class="ir-input no-icon @error('lettre_motivation') is-invalid @enderror"
+                                  placeholder="Bonjour, je souhaite rejoindre votre équipe en tant que…" data-count aria-label="Lettre de motivation">{{ old('lettre_motivation') }}</textarea>
+                        <div class="ir-hint"><span>Conseil : citez une ou deux réalisations concrètes.</span><span data-counter="lettre_motivation"></span></div>
+                        @error('lettre_motivation')<div class="ir-error"><i class="bi bi-exclamation-circle"></i>{{ $message }}</div>@enderror
+                    </div>
+                </section>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Lettre de motivation</label>
-                            <textarea name="lettre_motivation" class="form-control" rows="6" placeholder="Expliquez pourquoi ce poste vous intéresse...">{{ old('lettre_motivation') }}</textarea>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-2">
-                            <i class="bi bi-send me-1"></i>Envoyer ma candidature
-                        </button>
-                        <a href="{{ route('offres.show', $offre) }}" class="btn btn-outline-secondary w-100">Annuler</a>
-                    </form>
+                <div class="ir-form-actions">
+                    <a href="{{ route('offres.show', $offre) }}" class="ir-cancel">Annuler</a>
+                    <button type="submit" class="ir-submit"><i class="bi bi-send"></i>Envoyer ma candidature</button>
                 </div>
-            </div>
+            </form>
+        </div>
+
+        <div class="col-lg-4">
+            <aside class="ir-side">
+                <div class="ir-side-card">
+                    <h3>Le poste</h3>
+                    <div class="d-flex gap-3 align-items-start mb-3">
+                        <span class="ir-prev-logo">{{ strtoupper(mb_substr($offre->titre, 0, 1)) }}</span>
+                        <div>
+                            <strong class="d-block" style="color:var(--ir-ink)">{{ $offre->titre }}</strong>
+                            <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ $offre->lieu }} · {{ $offre->type_contrat }}</small>
+                        </div>
+                    </div>
+                    <p class="small text-muted mb-3">{{ Str::limit($offre->description, 160) }}</p>
+                    <div class="small d-flex align-items-center gap-2" style="color:#b45309">
+                        <i class="bi bi-calendar-x"></i>Candidatures jusqu'au {{ \Carbon\Carbon::parse($offre->date_limite)->format('d/m/Y') }}
+                    </div>
+                </div>
+                @if ($candidat)
+                    <div class="ir-side-card">
+                        <h3>Envoyé avec votre profil</h3>
+                        <div class="d-grid gap-2 small">
+                            <span><i class="bi bi-person me-2 text-muted"></i>{{ $candidat->nom }} {{ $candidat->prenom }}</span>
+                            <span><i class="bi bi-envelope me-2 text-muted"></i>{{ $candidat->email }}</span>
+                            @if ($candidat->telephone)<span><i class="bi bi-telephone me-2 text-muted"></i>{{ $candidat->telephone }}</span>@endif
+                        </div>
+                    </div>
+                @endif
+            </aside>
         </div>
     </div>
 @endsection
+
+@push('styles')
+<style>
+    .ir-prev-logo { width: 42px; height: 42px; flex-shrink: 0; border-radius: 11px; display: grid; place-items: center; color: #fff; font-weight: 800; background: linear-gradient(135deg, var(--ir-sky), var(--ir-blue)); }
+</style>
+@endpush

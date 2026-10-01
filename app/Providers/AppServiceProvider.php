@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Liens de pagination au format Bootstrap 5 (le site utilise Bootstrap)
+        Paginator::useBootstrapFive();
+
+        // Dates en français (« lundi 20 octobre », « dans 2 jours »)
+        \Carbon\Carbon::setLocale(config('app.locale'));
     }
 }
